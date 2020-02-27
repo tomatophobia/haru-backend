@@ -1,0 +1,11 @@
+logs
+target
+project
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/.g8
+/.metals
+/RUNNING_PID
