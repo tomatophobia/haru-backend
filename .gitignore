@@ -10,3 +10,4 @@ project
 /.metals
 /.bloop
 /RUNNING_PID
+/.scalafmt.conf
