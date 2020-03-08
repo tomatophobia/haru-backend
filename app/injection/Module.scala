@@ -1,9 +1,12 @@
+package injection
+
 import javax.inject._
 
 import com.google.inject.AbstractModule
 import net.codingwell.scalaguice.ScalaModule
 import play.api.{Configuration, Environment}
-import controllers.tree._
+import services._
+import repositories._
 
 /**
   * Sets up custom components for Play.
@@ -15,6 +18,15 @@ class Module(environment: Environment, configuration: Configuration)
     with ScalaModule {
 
   override def configure() = {
-    bind[TreeRepository].to[TreeRepositoryImpl].in[Singleton]
+    bindDAOs()
+    bindServices()
+  }
+
+  private def bindDAOs(): Unit = {
+    bind[TreeRepository].to[TreeRepositoryImpl]
+  }
+
+  def bindServices(): Unit = {
+    bind[TreeService].to[TreeServiceImpl]
   }
 }

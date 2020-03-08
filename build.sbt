@@ -5,15 +5,21 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.12.10"
 
 libraryDependencies += guice
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
-libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.20.3"
-libraryDependencies += "org.joda" % "joda-convert" % "2.2.1"
-libraryDependencies += "net.logstash.logback" % "logstash-logback-encoder" % "6.2"
-libraryDependencies += "io.lemonlabs" %% "scala-uri" % "1.5.1"
-libraryDependencies += "net.codingwell" %% "scala-guice" % "4.2.6"
+
+libraryDependencies ++= Seq(
+  guice,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
+  "org.reactivemongo" % "play2-reactivemongo_2.12" % "0.20.3-play28",
+  "org.reactivemongo" % "reactivemongo-play-json_2.12" % "0.20.3-play28",
+  "org.reactivemongo" % "reactivemongo-bson-macros_2.12" % "0.20.3-noshaded",
+  "org.joda" % "joda-convert" % "2.2.1",
+  "net.logstash.logback" % "logstash-logback-encoder" % "6.2",
+  "io.lemonlabs" %% "scala-uri" % "1.5.1",
+  "net.codingwell" %% "scala-guice" % "4.2.6",
+)
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.haru.controllers._"

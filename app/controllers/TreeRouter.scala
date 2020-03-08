@@ -1,4 +1,4 @@
-package controllers.tree
+package controllers
 
 import javax.inject.Inject
 
@@ -20,7 +20,7 @@ class TreeRouter @Inject()(controller: TreeController) extends SimpleRouter {
 
   override def routes: Routes = {
     case GET(p"/") =>
-      controller.list
+      controller.findAll
 
    // case POST(p"/") =>
    //   controller.process
