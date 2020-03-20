@@ -12,6 +12,9 @@ class TreeServiceImpl @Inject()(treeRepository: TreeRepository) extends TreeServ
   override def findAll(): Future[List[Tree]] =
     treeRepository.findAll()
 
+  override def insert(insert: Tree): Future[Unit] = 
+    treeRepository.insert(insert)
+
   override def update(update: Tree): Future[Unit] = 
     treeRepository.update(update)
 

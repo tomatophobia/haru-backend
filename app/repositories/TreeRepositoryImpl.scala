@@ -30,6 +30,11 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     }
   }
 
+  override def insert(insert: Tree): Future[Unit] = {
+    logger.trace(s"insert: $insert.id")
+    treesFuture.map(_.insert.one(insert))
+  }
+
   override def update(update: Tree): Future[Unit] = {
     logger.trace(s"update: $update.id")
     val selector = BSONDocument("id" -> update.id)

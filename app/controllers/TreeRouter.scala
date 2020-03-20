@@ -16,11 +16,15 @@ class TreeRouter @Inject()(controller: TreeController) extends SimpleRouter {
     case GET(p"/") =>
       controller.findAll
 
+    case POST(p"/") =>
+      controller.insert
+
     case PUT(p"/") =>
       controller.update()
 
     case DELETE(p"/$id") =>
       controller.delete(id.split("").toList.map(_.toInt))
+
 
    // case POST(p"/") =>
    //   controller.process

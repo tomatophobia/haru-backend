@@ -9,6 +9,7 @@ import models.Tree
   */
 trait TreeRepository {
   def findAll(): Future[List[Tree]]
+  def insert(insert: Tree): Future[Unit]
   def update(update: Tree): Future[Unit]
   def delete(id: Seq[Int]): Future[Unit]
 }
