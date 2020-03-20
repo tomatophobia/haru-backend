@@ -34,4 +34,9 @@ class TreeController @Inject() (cc: ControllerComponents, treeService: TreeServi
     logger.trace("update: ")
     treeService.update(request.body.as[Tree]) map (_ => Ok)
   }
+
+  def delete(id: Seq[Int]): Action[AnyContent] = Action.async { implicit request =>
+    logger.trace("delete: ")
+    treeService.delete(id) map (_ => Ok)
+  }
 }

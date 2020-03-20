@@ -10,5 +10,6 @@ import models.Tree
 trait TreeRepository {
   def findAll(): Future[List[Tree]]
   def update(update: Tree): Future[Unit]
+  def delete(id: Seq[Int]): Future[Unit]
 }
 

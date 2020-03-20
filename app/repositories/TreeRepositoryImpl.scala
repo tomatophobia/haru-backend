@@ -40,4 +40,12 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
     treesFuture.map(_.update.one(selector, modifier, false, false))
   }
+
+  override def delete(id: Seq[Int]): Future[Unit] = {
+    logger.trace(s"delete: $id")
+    val selector = BSONDocument("id" -> id)
+
+    treesFuture.map(_.delete.one(selector))
+    // TODO 후처리
+  }
 }
