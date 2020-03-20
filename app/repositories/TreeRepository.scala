@@ -9,5 +9,6 @@ import models.Tree
   */
 trait TreeRepository {
   def findAll(): Future[List[Tree]]
+  def update(update: Tree): Future[Unit]
 }
 

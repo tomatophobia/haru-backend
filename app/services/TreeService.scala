@@ -8,4 +8,5 @@ import models.Tree
 
 trait TreeService {
   def findAll(): Future[List[Tree]]
+  def update(update: Tree): Future[Unit]
 }
