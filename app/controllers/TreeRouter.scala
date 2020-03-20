@@ -20,7 +20,7 @@ class TreeRouter @Inject()(controller: TreeController) extends SimpleRouter {
       controller.insert
 
     case PUT(p"/") =>
-      controller.update()
+      controller.update
 
     case DELETE(p"/$id") =>
       controller.delete(id.split("").toList.map(_.toInt))

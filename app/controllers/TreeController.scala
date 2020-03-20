@@ -24,7 +24,7 @@ class TreeController @Inject() (cc: ControllerComponents, treeService: TreeServi
 
   def findAll: Action[AnyContent] = Action.async { implicit request =>
     logger.trace("findAll: ")
-    treeService.findAll().map { trees =>
+    treeService.findAll.map { trees =>
       logger.trace(s"Found ${trees.size} trees.")
       Ok(toJson(trees))
     }

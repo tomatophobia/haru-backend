@@ -20,7 +20,7 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
   private val treesFuture: Future[BSONCollection] = getCollection(treeCollectionName)
 
-  override def findAll(): Future[List[Tree]] = {
+  override def findAll: Future[List[Tree]] = {
     logger.trace(s"findAll: ")
     treesFuture flatMap { coll =>
       coll
@@ -30,17 +30,17 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     }
   }
 
-  override def insert(insert: Tree): Future[Unit] = {
-    logger.trace(s"insert: $insert.id")
-    treesFuture.map(_.insert.one(insert))
+  override def insert(tree: Tree): Future[Unit] = {
+    logger.trace(s"insert: $tree.id")
+    treesFuture.map(_.insert.one(tree))
   }
 
-  override def update(update: Tree): Future[Unit] = {
-    logger.trace(s"update: $update.id")
-    val selector = BSONDocument("id" -> update.id)
+  override def update(tree: Tree): Future[Unit] = {
+    logger.trace(s"update: $tree.id")
+    val selector = BSONDocument("id" -> tree.id)
 
     val modifier = BSONDocument(
-        "$set" -> update
+        "$set" -> tree
       )
 
     treesFuture.map(_.update.one(selector, modifier, false, false))
