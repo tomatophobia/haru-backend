@@ -3,6 +3,7 @@ package repositories
 import javax.inject.Inject
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.immutable.Queue
 
 import play.api.{Configuration, Logger}
 
@@ -14,11 +15,23 @@ import helpers.DbHelper.getCollection
 
 import models.Tree
 
+
 class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Configuration)
     extends TreeRepository {
   private val logger = Logger(this.getClass)
 
   private val treesFuture: Future[BSONCollection] = getCollection(treeCollectionName)
+
+  private def treeSelector(id: Seq[Int]): BSONDocument = {
+    assert(id.length != 0)
+    def go(remain: Seq[Int], current: Seq[Int]): BSONDocument = {
+       if (remain.length == 0)
+         BSONDocument("id" -> current)
+       else
+         BSONDocument("id" -> current, "child" -> BSONDocument("$elemMatch" -> go(remain.tail, current :+ remain.head)))
+    }
+    go(id.tail, Queue(id.head))
+  }
 
   override def findAll: Future[List[Tree]] = {
     logger.trace(s"findAll: ")
@@ -37,13 +50,19 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
   override def update(tree: Tree): Future[Unit] = {
     logger.trace(s"update: $tree.id")
-    val selector = BSONDocument("id" -> tree.id)
-
-    val modifier = BSONDocument(
+    if (tree.id.length == 1) {
+      val selector = BSONDocument("id" -> tree.id)
+      val modifier = BSONDocument(
         "$set" -> tree
       )
-
-    treesFuture.map(_.update.one(selector, modifier, false, false))
+      treesFuture.map(_.update.one(selector, modifier, false, false))
+    } else {
+      val selector = treeSelector(tree.id)
+      val modifier = BSONDocument(
+        "$set" -> BSONDocument("child.$" -> tree)
+      )
+      treesFuture.map(_.update.one(selector, modifier, false, false))
+    }
   }
 
   override def delete(id: Seq[Int]): Future[Unit] = {
@@ -53,4 +72,5 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     treesFuture.map(_.delete.one(selector))
     // TODO 후처리
   }
+
 }
