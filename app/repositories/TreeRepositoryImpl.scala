@@ -45,7 +45,11 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
   override def insert(tree: Tree): Future[Unit] = {
     logger.trace(s"insert: $tree.id")
-    treesFuture.map(_.insert.one(tree))
+    if (tree.id.length == 1)
+      treesFuture.map(_.insert.one(tree))
+    else
+      // TODO tree.id.init이 O(n) time 연산임 나중에 리팩토링 가능?
+      treesFuture.map(_.update.one(treeSelector(tree.id.init), BSONDocument("$push" -> BSONDocument("child" -> tree))))
   }
 
   override def update(tree: Tree): Future[Unit] = {
