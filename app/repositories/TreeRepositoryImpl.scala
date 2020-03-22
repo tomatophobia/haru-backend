@@ -50,19 +50,9 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
   override def update(tree: Tree): Future[Unit] = {
     logger.trace(s"update: $tree.id")
-    if (tree.id.length == 1) {
-      val selector = BSONDocument("id" -> tree.id)
-      val modifier = BSONDocument(
-        "$set" -> tree
-      )
-      treesFuture.map(_.update.one(selector, modifier, false, false))
-    } else {
-      val selector = treeSelector(tree.id)
-      val modifier = BSONDocument(
-        "$set" -> BSONDocument("child.$" -> tree)
-      )
-      treesFuture.map(_.update.one(selector, modifier, false, false))
-    }
+    val selector = treeSelector(tree.id)
+    val modifier = if (tree.id.length == 1) BSONDocument("$set" -> tree) else BSONDocument( "$set" -> BSONDocument("child.$" -> tree))
+    treesFuture.map(_.update.one(selector, modifier, false, false))
   }
 
   override def delete(id: Seq[Int]): Future[Unit] = {
