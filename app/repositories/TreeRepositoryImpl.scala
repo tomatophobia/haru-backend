@@ -33,6 +33,33 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     go(id.tail, Queue(id.head))
   }
 
+  private def subTreeModifierSelectorString(length: Int): String = {
+    assert(length >= 2)
+    // child.$[i0].child.$[i1].child.$[i2].child. ... $[in].child
+    def go(n: Int, res: String): String = {
+      if (n == 0) "child" + res
+      else {
+        val k = n - 1
+        go(k, ".$[i" + s"$k" +"].child" + res)
+      }
+    }
+    go(length-2, "")
+  }
+
+  private def subTreeArrayFilter(id: Seq[Int]): Seq[BSONDocument] = {
+    assert(id.length >= 2)
+    // List(BSONDocument("i0.id" -> ...), BSONDocument("i1.id -> ..."), ...)
+    val k = id.length - 2
+    def go(n: Int, res: List[BSONDocument], remain: Seq[Int], cur: Seq[Int]): List[BSONDocument] = {
+      if (n == 0) res
+      else {
+        val key = "i" + (k-n).toString + ".id"
+        go(n-1, BSONDocument(key -> cur) :: res, remain.tail, cur :+ remain.head)
+      }
+    }
+    go(k, List(), id.drop(2), id.take(2))
+  }
+
   override def findAll: Future[List[Tree]] = {
     logger.trace(s"findAll: ")
     treesFuture flatMap { coll =>
@@ -47,9 +74,12 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     logger.trace(s"insert: $tree.id")
     if (tree.id.length == 1)
       treesFuture.map(_.insert.one(tree))
-    else
-      // TODO tree.id.init이 O(n) time 연산임 나중에 리팩토링 가능?
-      treesFuture.map(_.update.one(treeSelector(tree.id.init), BSONDocument("$push" -> BSONDocument("child" -> tree))))
+    else {
+      val selector = BSONDocument("id" -> List(tree.id.head))
+      val modifier = BSONDocument("$push" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) -> tree))
+      val filter = subTreeArrayFilter(tree.id)
+      treesFuture.map(_.update.one(selector, modifier, false, false, None, filter))
+    }
   }
 
   override def update(tree: Tree): Future[Unit] = {
