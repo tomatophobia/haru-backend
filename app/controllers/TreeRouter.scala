@@ -23,7 +23,7 @@ class TreeRouter @Inject()(controller: TreeController) extends SimpleRouter {
       controller.update
 
     case DELETE(p"/$id") =>
-      controller.delete(id.split("").toList.map(_.toInt))
+      controller.delete(id.split("\\.").toList.map(_.toInt))
 
 
    // case POST(p"/") =>
