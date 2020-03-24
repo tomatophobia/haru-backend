@@ -77,8 +77,9 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     if (tree.id.length == 1)
       treesFuture.map(_.update.one(selector, BSONDocument("$set" -> tree)))
     else {
-      val modifier = BSONDocument("$set" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) -> tree))
-      val filter = subTreeArrayFilter(tree.id)
+      val k = tree.id.length - 2
+      val modifier = BSONDocument("$set" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) + ".$[i" + s"$k]" -> tree))
+      val filter = BSONDocument(s"i$k.id" -> tree.id) +: subTreeArrayFilter(tree.id)
       treesFuture.map(_.update.one(selector, modifier, false, false, None, filter))
     }
   }
