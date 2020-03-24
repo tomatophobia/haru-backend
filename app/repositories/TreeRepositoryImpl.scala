@@ -91,9 +91,18 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
   override def delete(id: Seq[Int]): Future[Unit] = {
     logger.trace(s"delete: $id")
-    val selector = BSONDocument("id" -> id)
+    if (id.length == 1) {
+      val selector = BSONDocument("id" -> id)
+      treesFuture.map(_.delete.one(selector))
+    }
+    else {
+      val selector = BSONDocument("id" -> List(id.head))
+      val modifier = BSONDocument("$pull" -> BSONDocument(subTreeModifierSelectorString(id.length) -> BSONDocument("id" -> id)))
+      val filter = subTreeArrayFilter(id)
+      treesFuture.map(_.update.one(selector, modifier, false, false, None, filter))
+    }
+      
 
-    treesFuture.map(_.delete.one(selector))
     // TODO 후처리
   }
 
