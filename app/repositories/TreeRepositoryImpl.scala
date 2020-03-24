@@ -22,17 +22,6 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
   private val treesFuture: Future[BSONCollection] = getCollection(treeCollectionName)
 
-  private def treeSelector(id: Seq[Int]): BSONDocument = {
-    assert(id.length != 0)
-    def go(remain: Seq[Int], current: Seq[Int]): BSONDocument = {
-       if (remain.length == 0)
-         BSONDocument("id" -> current)
-       else
-         BSONDocument("id" -> current, "child" -> BSONDocument("$elemMatch" -> go(remain.tail, current :+ remain.head)))
-    }
-    go(id.tail, Queue(id.head))
-  }
-
   private def subTreeModifierSelectorString(length: Int): String = {
     assert(length >= 2)
     // child.$[i0].child.$[i1].child.$[i2].child. ... $[in].child
@@ -84,9 +73,14 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
 
   override def update(tree: Tree): Future[Unit] = {
     logger.trace(s"update: $tree.id")
-    val selector = treeSelector(tree.id)
-    val modifier = if (tree.id.length == 1) BSONDocument("$set" -> tree) else BSONDocument( "$set" -> BSONDocument("child.$" -> tree))
-    treesFuture.map(_.update.one(selector, modifier, false, false))
+    val selector = BSONDocument("id" -> List(tree.id.head))
+    if (tree.id.length == 1)
+      treesFuture.map(_.update.one(selector, BSONDocument("$set" -> tree)))
+    else {
+      val modifier = BSONDocument("$set" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) -> tree))
+      val filter = subTreeArrayFilter(tree.id)
+      treesFuture.map(_.update.one(selector, modifier, false, false, None, filter))
+    }
   }
 
   override def delete(id: Seq[Int]): Future[Unit] = {
