@@ -50,7 +50,7 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
   }
 
   override def findAll: Future[List[Tree]] = {
-    logger.trace(s"findAll: ")
+    logger.debug("findAll")
     treesFuture flatMap { coll =>
       coll
         .find(BSONDocument(), Option.empty[BSONDocument])
@@ -60,7 +60,7 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
   }
 
   override def insert(tree: Tree): Future[Unit] = {
-    logger.trace(s"insert: $tree.id")
+    logger.debug(s"insert: $tree.id")
     if (tree.id.length == 1)
       treesFuture.map(_.insert.one(tree))
     else {
@@ -72,7 +72,7 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
   }
 
   override def update(tree: Tree): Future[Unit] = {
-    logger.trace(s"update: $tree.id")
+    logger.debug(s"update: $tree.id")
     val selector = BSONDocument("id" -> List(tree.id.head))
     if (tree.id.length == 1)
       treesFuture.map(_.update.one(selector, BSONDocument("$set" -> tree)))
@@ -85,7 +85,7 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
   }
 
   override def delete(id: Seq[Int]): Future[Unit] = {
-    logger.trace(s"delete: $id")
+    logger.debug(s"delete: $id")
     if (id.length == 1) {
       val selector = BSONDocument("id" -> id)
       treesFuture.map(_.delete.one(selector))

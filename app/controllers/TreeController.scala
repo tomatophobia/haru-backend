@@ -20,28 +20,28 @@ class TreeController @Inject() (cc: ControllerComponents, treeService: TreeServi
     implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  private val logger = Logger(getClass)
+  private val logger = Logger(this.getClass)
 
   def findAll: Action[AnyContent] = Action.async { implicit request =>
-    logger.trace("findAll: ")
+    logger.info("findAll: ")
     treeService.findAll.map { trees =>
-      logger.trace(s"Found ${trees.size} trees.")
+      logger.debug(s"Found ${trees.size} trees.")
       Ok(toJson(trees))
     }
   }
 
   def insert: Action[JsValue] = Action.async(parse.json) { implicit request =>
-    logger.trace("insert")
+    logger.info("insert: ")
     treeService.insert(request.body.as[Tree]).map (_ => Ok)
   }
 
   def update(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    logger.trace("update: ")
+    logger.info("update: ")
     treeService.update(request.body.as[Tree]) map (_ => Ok)
   }
 
   def delete(id: Seq[Int]): Action[AnyContent] = Action.async { implicit request =>
-    logger.trace("delete: ")
+    logger.info("delete: ")
     treeService.delete(id) map (_ => Ok)
   }
 }
