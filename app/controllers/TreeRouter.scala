@@ -12,15 +12,19 @@ import play.api.routing.sird._
 class TreeRouter @Inject()(controller: TreeController) extends SimpleRouter {
   val prefix = "/trees"
 
-//  def link(id: Seq[Int]): String = {
-//    import io.lemonlabs.uri.dsl._
-//    val url = prefix / id.map(_.toString).foldRight("")(_ + _)
-//    url.toString()
-//  }
-
   override def routes: Routes = {
     case GET(p"/") =>
       controller.findAll
+
+    case POST(p"/") =>
+      controller.insert
+
+    case PUT(p"/") =>
+      controller.update
+
+    case DELETE(p"/$id") =>
+      controller.delete(id.split("\\.").toList.map(_.toInt))
+
 
    // case POST(p"/") =>
    //   controller.process

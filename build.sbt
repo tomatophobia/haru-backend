@@ -7,8 +7,6 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.12.10"
 
-libraryDependencies += guice
-
 libraryDependencies ++= Seq(
   guice,
   "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,

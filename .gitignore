@@ -11,3 +11,4 @@ project
 /.bloop
 /RUNNING_PID
 /.scalafmt.conf
+*.swp
