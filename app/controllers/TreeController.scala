@@ -1,6 +1,7 @@
 package controllers
 
 import javax.inject.Inject
+import javax.inject.Singleton
 
 import play.api.Logger
 import play.api.libs.json.Json.toJson
@@ -16,6 +17,7 @@ import models.Tree
 /**
   * Takes HTTP requests and produces JSON.
   */
+@Singleton
 class TreeController @Inject() (cc: ControllerComponents, treeService: TreeService)(
     implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
