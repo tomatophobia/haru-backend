@@ -101,4 +101,15 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     // TODO 후처리
   }
 
+  override def deleteAll: Future[Unit] = {
+    logger.debug("delete all documents")
+    treesFuture.map(coll => {
+      val deleteBuilder = coll.delete(ordered = false)
+
+      val deletes = Future.sequence(Seq(deleteBuilder.element(q = BSONDocument(), limit = None, collation = None)))
+
+      deletes.flatMap { ops => deleteBuilder.many(ops) }
+    })
+  }
+
 }

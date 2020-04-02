@@ -15,7 +15,7 @@ import models.Tree
 import injection.TestModule
 
 
-class TreeRepositorySpec extends PlaySpec with GuiceOneAppPerTest {
+class TreeRepositorySpec extends PlaySpec with GuiceOneAppPerTest with BeforeAndAfter {
   private lazy val appConfig: Map[String, Any] = Map(
     "mongodb.servers" -> List("localhost"),
     "mongodb.port" -> 27017,
@@ -28,17 +28,24 @@ class TreeRepositorySpec extends PlaySpec with GuiceOneAppPerTest {
     .build
   }
 
+  implicit val conf = fakeApplication.configuration
+  val treeRepository = new TreeRepositoryImpl()
+
+  before {
+    val initialTree = Tree(List(0), 0, "test", false, List())
+    treeRepository.insert(initialTree)
+  }
+
+  after {
+    treeRepository.deleteAll
+  }
+
 
   "The TreeRepository" should {
     "find all trees" in {
-      implicit val conf = app.configuration
-      val treeRepository = new TreeRepositoryImpl()
-      val initialTree = Tree(List(0), 0, "test", false, List())
-      treeRepository.insert(initialTree)
-
       val result: List[Tree] = Await.result(treeRepository.findAll, 10.seconds)
 
-      result.head must equal (initialTree)
+      result.head must equal (Tree(List(0), 0, "test", false, List()))
     }
   } 
 }

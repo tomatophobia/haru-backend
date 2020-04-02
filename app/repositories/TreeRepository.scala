@@ -12,5 +12,6 @@ trait TreeRepository {
   def insert(tree: Tree): Future[Unit]
   def update(tree: Tree): Future[Unit]
   def delete(id: Seq[Int]): Future[Unit]
+  def deleteAll: Future[Unit]
 }
 
