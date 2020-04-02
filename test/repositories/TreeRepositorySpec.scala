@@ -14,7 +14,6 @@ import java.io.File
 import models.Tree
 import injection.TestModule
 
-
 class TreeRepositorySpec extends PlaySpec with GuiceOneAppPerTest with BeforeAndAfter {
   private lazy val appConfig: Map[String, Any] = Map(
     "mongodb.servers" -> List("localhost"),
@@ -24,29 +23,48 @@ class TreeRepositorySpec extends PlaySpec with GuiceOneAppPerTest with BeforeAnd
 
   override def fakeApplication(): Application = {
     GuiceApplicationBuilder()
-    .configure(appConfig)
-    .build
+      .configure(appConfig)
+      .build
   }
 
   implicit val conf = fakeApplication.configuration
   val treeRepository = new TreeRepositoryImpl()
+  val tree1 = Tree(List(0), 0, "test1", false, List())
+  val tree2 = Tree(List(1), 0, "test2", false, List())
+  val tree3 = Tree(List(2), 0, "test3", false, List())
 
-  before {
-    val initialTree = Tree(List(0), 0, "test", false, List())
-    treeRepository.insert(initialTree)
-  }
+//  before {
+//  }
 
   after {
     treeRepository.deleteAll
   }
 
-
   "The TreeRepository" should {
-    "find all trees" in {
-      val result: List[Tree] = Await.result(treeRepository.findAll, 10.seconds)
+    "delete all trees" in {
+      treeRepository.deleteAll
 
-      result.head must equal (Tree(List(0), 0, "test", false, List()))
+      val result = Await.result(treeRepository.findAll, 10.seconds)
+      result.length must equal(0)
     }
-  } 
-}
 
+    "find all trees that inserted before" in {
+
+      val insertResults = Future.sequence(
+        Seq(
+          treeRepository.insert(tree1),
+          treeRepository.insert(tree2),
+          treeRepository.insert(tree3)
+        )
+      )
+
+      insertResults
+        .flatMap(_ => treeRepository.findAll)
+        .map(result => {
+          result must contain(tree1)
+          result must contain(tree2)
+          result must contain(tree3)
+        })
+    }
+  }
+}
