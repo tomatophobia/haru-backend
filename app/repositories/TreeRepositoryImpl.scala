@@ -7,9 +7,10 @@ import scala.collection.immutable.Queue
 
 import play.api.{Configuration, Logger}
 
-import reactivemongo.api.Cursor
 import reactivemongo.api.bson._
 import reactivemongo.api.bson.collection.BSONCollection
+import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.Cursor
 
 import helpers.DbHelper.getCollection
 
@@ -59,15 +60,15 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     }
   }
 
-  override def insert(tree: Tree): Future[Unit] = {
+  override def insert(tree: Tree): Future[WriteResult] = {
     logger.debug(s"insert: $tree.id")
     if (tree.id.length == 1)
-      treesFuture.map(_.insert.one(tree))
+      treesFuture.flatMap(_.insert.one(tree))
     else {
       val selector = BSONDocument("id" -> List(tree.id.head))
       val modifier = BSONDocument("$push" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) -> tree))
       val filter = subTreeArrayFilter(tree.id)
-      treesFuture.map(_.update.one(selector, modifier, false, false, None, filter))
+      treesFuture.flatMap(_.update.one(selector, modifier, false, false, None, filter))
     }
   }
 
