@@ -17,9 +17,9 @@ class TreeServiceImpl @Inject()(treeRepository: TreeRepository) extends TreeServ
   override def insert(tree: Tree): Future[WriteResult] = 
     treeRepository.insert(tree)
 
-  override def update(tree: Tree): Future[Unit] = 
+  override def update(tree: Tree): Future[WriteResult] = 
     treeRepository.update(tree)
 
-  override def delete(id: Seq[Int]): Future[Unit] =
+  override def delete(id: Seq[Int]): Future[WriteResult] =
     treeRepository.delete(id)
 }

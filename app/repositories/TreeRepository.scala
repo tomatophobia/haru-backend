@@ -5,6 +5,7 @@ import scala.concurrent.Future
 import models.Tree
 
 import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.commands.MultiBulkWriteResult
 
 /**
   * A pure non-blocking interface for the TreeRepository.
@@ -12,8 +13,8 @@ import reactivemongo.api.commands.WriteResult
 trait TreeRepository {
   def findAll: Future[List[Tree]]
   def insert(tree: Tree): Future[WriteResult]
-  def update(tree: Tree): Future[Unit]
-  def delete(id: Seq[Int]): Future[Unit]
-  def deleteAll: Future[Unit]
+  def update(tree: Tree): Future[WriteResult]
+  def delete(id: Seq[Int]): Future[WriteResult]
+  def deleteAll: Future[MultiBulkWriteResult]
 }
 

@@ -15,6 +15,7 @@ import reactivemongo.api.Cursor
 import helpers.DbHelper.getCollection
 
 import models.Tree
+import reactivemongo.api.commands.MultiBulkWriteResult
 
 
 class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Configuration)
@@ -72,39 +73,39 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     }
   }
 
-  override def update(tree: Tree): Future[Unit] = {
+  override def update(tree: Tree): Future[WriteResult] = {
     logger.debug(s"update: $tree.id")
     val selector = BSONDocument("id" -> List(tree.id.head))
     if (tree.id.length == 1)
-      treesFuture.map(_.update.one(selector, BSONDocument("$set" -> tree)))
+      treesFuture.flatMap(_.update.one(selector, BSONDocument("$set" -> tree)))
     else {
       val k = tree.id.length - 2
       val modifier = BSONDocument("$set" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) + ".$[i" + s"$k]" -> tree))
       val filter = BSONDocument(s"i$k.id" -> tree.id) +: subTreeArrayFilter(tree.id)
-      treesFuture.map(_.update.one(selector, modifier, false, false, None, filter))
+      treesFuture.flatMap(_.update.one(selector, modifier, false, false, None, filter))
     }
   }
 
-  override def delete(id: Seq[Int]): Future[Unit] = {
+  override def delete(id: Seq[Int]): Future[WriteResult] = {
     logger.debug(s"delete: $id")
     if (id.length == 1) {
       val selector = BSONDocument("id" -> id)
-      treesFuture.map(_.delete.one(selector))
+      treesFuture.flatMap(_.delete.one(selector))
     }
     else {
       val selector = BSONDocument("id" -> List(id.head))
       val modifier = BSONDocument("$pull" -> BSONDocument(subTreeModifierSelectorString(id.length) -> BSONDocument("id" -> id)))
       val filter = subTreeArrayFilter(id)
-      treesFuture.map(_.update.one(selector, modifier, false, false, None, filter))
+      treesFuture.flatMap(_.update.one(selector, modifier, false, false, None, filter))
     }
       
 
     // TODO 후처리
   }
 
-  override def deleteAll: Future[Unit] = {
+  override def deleteAll: Future[MultiBulkWriteResult] = {
     logger.debug("delete all documents")
-    treesFuture.map(coll => {
+    treesFuture.flatMap(coll => {
       val deleteBuilder = coll.delete(ordered = false)
 
       val deletes = Future.sequence(Seq(deleteBuilder.element(q = BSONDocument(), limit = None, collation = None)))
