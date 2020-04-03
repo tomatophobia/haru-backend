@@ -42,10 +42,8 @@ class TreeRepositorySpec extends PlaySpec with GuiceOneAppPerTest with BeforeAnd
 
   "The TreeRepository" should {
     "delete all trees" in {
-      treeRepository.deleteAll
-
-      val result = Await.result(treeRepository.findAll, 10.seconds)
-      result.length must equal(0)
+      for (_ <- treeRepository.deleteAll;
+           result <- treeRepository.findAll) yield result.length must equal(0)
     }
 
     "find all trees that inserted before" in {
@@ -58,13 +56,12 @@ class TreeRepositorySpec extends PlaySpec with GuiceOneAppPerTest with BeforeAnd
         )
       )
 
-      insertResults
-        .flatMap(_ => treeRepository.findAll)
-        .map(result => {
-          result must contain(tree1)
-          result must contain(tree2)
-          result must contain(tree3)
-        })
+      for (_ <- insertResults;
+           result <- treeRepository.findAll) yield {
+        result must contain(tree1)
+        result must contain(tree2)
+        result must contain(tree3)
+      }
     }
   }
 }
