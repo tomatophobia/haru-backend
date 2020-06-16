@@ -17,7 +17,10 @@ libraryDependencies ++= Seq(
   "net.logstash.logback" % "logstash-logback-encoder" % "6.2",
   "io.lemonlabs" %% "scala-uri" % "1.5.1",
   "net.codingwell" %% "scala-guice" % "4.2.6",
+  "org.mockito" %% "mockito-scala-scalaz" % "1.11.3"
 )
+
+scalacOptions += "-feature"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.haru.controllers._"
