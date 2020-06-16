@@ -12,6 +12,7 @@ import reactivemongo.api.commands.MultiBulkWriteResult
   */
 trait TreeRepository {
   def findAll: Future[List[Tree]]
+  def findOne(id: Seq[Int]): Future[Option[Tree]]
   def insert(tree: Tree): Future[WriteResult]
   def update(tree: Tree): Future[WriteResult]
   def delete(id: Seq[Int]): Future[WriteResult]

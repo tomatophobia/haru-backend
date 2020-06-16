@@ -50,6 +50,18 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     go(k, List(), id.drop(2), id.take(2))
   }
 
+  private def subTreeFinder(treeOpt: Option[Tree], id: Seq[Int]): Option[Tree] = {
+    treeOpt.flatMap { tree =>
+      if (tree.id.length == id.length) {
+        Some(tree)
+      }
+      else {
+        val sub = tree.child.find(c => c.id == id.take(c.id.length))
+        subTreeFinder(sub, id)
+      }
+    }
+  }
+
   override def findAll: Future[List[Tree]] = {
     logger.debug("findAll")
     treesFuture flatMap { coll =>
@@ -57,6 +69,16 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
         .find(BSONDocument(), Option.empty[BSONDocument])
         .cursor[Tree]()
         .collect[List](-1, Cursor.FailOnError[List[Tree]]())
+    }
+  }
+
+  override def findOne(id: Seq[Int]): Future[Option[Tree]] = {
+    logger.debug(s"find tree: $id")
+    treesFuture flatMap { coll =>
+      coll
+        .find(BSONDocument("id" -> id.head), Option.empty[BSONDocument])
+        .one[Tree]
+        .map(tree => subTreeFinder(tree, id))
     }
   }
 
