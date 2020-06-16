@@ -37,7 +37,7 @@ class TreeController @Inject() (cc: ControllerComponents, treeService: TreeServi
     treeService.insert(request.body.as[Tree]).map (_ => Ok)
   }
 
-  def update(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def update: Action[JsValue] = Action.async(parse.json) { implicit request =>
     logger.info("update: ")
     treeService.update(request.body.as[Tree]) map (_ => Ok)
   }

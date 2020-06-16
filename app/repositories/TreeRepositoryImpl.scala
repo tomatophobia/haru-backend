@@ -17,7 +17,6 @@ import helpers.DbHelper.getCollection
 import models.Tree
 import reactivemongo.api.commands.MultiBulkWriteResult
 
-
 class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Configuration)
     extends TreeRepository {
   private val logger = Logger(this.getClass)
@@ -31,10 +30,10 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
       if (n == 0) "child" + res
       else {
         val k = n - 1
-        go(k, ".$[i" + s"$k" +"].child" + res)
+        go(k, ".$[i" + s"$k" + "].child" + res)
       }
     }
-    go(length-2, "")
+    go(length - 2, "")
   }
 
   private def subTreeArrayFilter(id: Seq[Int]): Seq[BSONDocument] = {
@@ -44,8 +43,8 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     def go(n: Int, res: List[BSONDocument], remain: Seq[Int], cur: Seq[Int]): List[BSONDocument] = {
       if (n == 0) res
       else {
-        val key = "i" + (k-n).toString + ".id"
-        go(n-1, BSONDocument(key -> cur) :: res, remain.tail, cur :+ remain.head)
+        val key = "i" + (k - n).toString + ".id"
+        go(n - 1, BSONDocument(key -> cur) :: res, remain.tail, cur :+ remain.head)
       }
     }
     go(k, List(), id.drop(2), id.take(2))
@@ -67,7 +66,9 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
       treesFuture.flatMap(_.insert.one(tree))
     else {
       val selector = BSONDocument("id" -> List(tree.id.head))
-      val modifier = BSONDocument("$push" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) -> tree))
+      val modifier = BSONDocument(
+        "$push" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) -> tree)
+      )
       val filter = subTreeArrayFilter(tree.id)
       treesFuture.flatMap(_.update.one(selector, modifier, false, false, None, filter))
     }
@@ -80,7 +81,11 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
       treesFuture.flatMap(_.update.one(selector, BSONDocument("$set" -> tree)))
     else {
       val k = tree.id.length - 2
-      val modifier = BSONDocument("$set" -> BSONDocument(subTreeModifierSelectorString(tree.id.length) + ".$[i" + s"$k]" -> tree))
+      val modifier = BSONDocument(
+        "$set" -> BSONDocument(
+          subTreeModifierSelectorString(tree.id.length) + ".$[i" + s"$k]" -> tree
+        )
+      )
       val filter = BSONDocument(s"i$k.id" -> tree.id) +: subTreeArrayFilter(tree.id)
       treesFuture.flatMap(_.update.one(selector, modifier, false, false, None, filter))
     }
@@ -91,15 +96,16 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     if (id.length == 1) {
       val selector = BSONDocument("id" -> id)
       treesFuture.flatMap(_.delete.one(selector))
-    }
-    else {
+    } else {
       val selector = BSONDocument("id" -> List(id.head))
-      val modifier = BSONDocument("$pull" -> BSONDocument(subTreeModifierSelectorString(id.length) -> BSONDocument("id" -> id)))
+      val modifier = BSONDocument(
+        "$pull" -> BSONDocument(
+          subTreeModifierSelectorString(id.length) -> BSONDocument("id" -> id)
+        )
+      )
       val filter = subTreeArrayFilter(id)
       treesFuture.flatMap(_.update.one(selector, modifier, false, false, None, filter))
     }
-      
-
     // TODO 후처리
   }
 
@@ -108,9 +114,13 @@ class TreeRepositoryImpl @Inject() ()(implicit ec: ExecutionContext, config: Con
     treesFuture.flatMap(coll => {
       val deleteBuilder = coll.delete(ordered = false)
 
-      val deletes = Future.sequence(Seq(deleteBuilder.element(q = BSONDocument(), limit = None, collation = None)))
+      val deletes = Future.sequence(
+        Seq(deleteBuilder.element(q = BSONDocument(), limit = None, collation = None))
+      )
 
-      deletes.flatMap { ops => deleteBuilder.many(ops) }
+      deletes.flatMap { ops =>
+        deleteBuilder.many(ops)
+      }
     })
   }
 
