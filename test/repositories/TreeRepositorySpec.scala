@@ -73,11 +73,6 @@ class TreeRepositorySpec extends TestSuite with GuiceOneAppPerSuite {
     } yield result)
 
     "The TreeRepository" should {
-      "delete all trees" in {
-        for (_ <- treeRepository.deleteAll;
-             result <- treeRepository.findAll) yield result.length must equal(0)
-      }
-
       "find all trees that already inserted before" in {
         for (result <- treeRepository.findAll) yield {
           result must contain(tree1)
@@ -95,12 +90,49 @@ class TreeRepositorySpec extends TestSuite with GuiceOneAppPerSuite {
           }
       }
 
+      "insert new root tree" in {
+        val newTree: Tree = Tree(List(3), 0, "insert test", checked = false, List(Tree(List(3, 0), 1, "insert test", checked = false, List())))
+
+        for (_ <- treeRepository.insert(newTree);
+             result <- treeRepository.findOne(List(3))) yield result.value must equal(newTree)
+      }
+
+      "insert new internal tree" in {
+        val newTree: Tree = Tree(List(1, 0), 1, "insert test", checked = false, List())
+        val inserted: Tree = Tree(List(1), 0, "test2", checked = false, List(newTree))
+        for (_ <- treeRepository.insert(newTree);
+             result <- treeRepository.findOne(List(1))) yield result.value must equal(inserted)
+      }
+
       "update tree with id" in {
         val toBe = Tree(List(2, 0, 0), 2, "test3-2-update", checked = true, List())
 
         for (_ <- treeRepository.update(toBe);
              result <- treeRepository.findOne(List(2, 0, 0))) yield result.value must equal(toBe)
       }
+
+      "delete one internal tree with id" in {
+        val deleted: Tree = Tree(List(0), 0, "test1", checked = false, List())
+        for (_ <- treeRepository.delete(List(0, 0));
+             result <- treeRepository.findOne(List(0)))
+          yield result.value must equal(deleted)
+      }
+
+      "delete one root tree with id" in {
+        for (_ <- treeRepository.delete(List(0));
+             result <- treeRepository.findAll)
+          yield {
+            result must not contain(tree1)
+            result must contain(tree2)
+            result must contain(tree3)
+          }
+      }
+
+      "delete all trees" in {
+        for (_ <- treeRepository.deleteAll;
+             result <- treeRepository.findAll) yield result.length must equal(0)
+      }
+
     }
   }
 
