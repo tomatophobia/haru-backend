@@ -78,7 +78,7 @@ class TreeRepositorySpec extends TestSuite with GuiceOneAppPerSuite {
              result <- treeRepository.findAll) yield result.length must equal(0)
       }
 
-      "find all trees that inserted before" in {
+      "find all trees that already inserted before" in {
         for (result <- treeRepository.findAll) yield {
           result must contain(tree1)
           result must contain(tree2)
